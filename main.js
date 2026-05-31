@@ -14,7 +14,7 @@ const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 
 const renderer = new THREE.WebGLRenderer();
-renderer.setSize( window.innerWidth/2, window.innerHeight/2);
+renderer.setSize( window.innerWidth/4, window.innerHeight/4);
 renderer.domElement.style.width = "100vw";
 renderer.domElement.style.height = "100vh";
 renderer.domElement.style.imageRendering = "pixelated";
@@ -26,6 +26,10 @@ scene.add(ambientLight);
 
 const controls = new PointerLockControls( camera, document.body );
 btnLock.onclick = () => controls.lock();
+
+//RAYCASTING
+const raycaster = new THREE.Raycaster();
+const centroPantalla = new THREE.Vector2(0, 0);
 
 //LOADING 3D MODELS
 const loader = new GLTFLoader();
@@ -160,6 +164,12 @@ function animate( time ) {
 }
 renderer.setAnimationLoop( animate );
 
+function getRandomInt(min, max) {
+  const minCeiled = Math.ceil(min);
+  const maxFloored = Math.floor(max);
+  return Math.floor(Math.random() * (maxFloored - minCeiled + 1) + minCeiled);
+}
+
 document.body.onkeydown = (e)=>{
   keys[e.key.toLowerCase()] = true;
 }
@@ -173,5 +183,19 @@ window.addEventListener('mousedown', () => {
     actionFire.stop(); 
     actionFire.time = 3;
     actionFire.play();
+    raycaster.setFromCamera(centroPantalla, camera);
+    const colisiones = raycaster.intersectObjects(scene.children, true);
+
+    // Si el rayo chocó con al menos un objeto...
+    if (colisiones.length > 0) {
+      const objetoGolpeado = colisiones[0].object;
+      console.log("¡Impacto confirmado!", objetoGolpeado);
+
+      if (objetoGolpeado === cubo2) {
+        objetoGolpeado.position.x = getRandomInt(-1,10);
+        objetoGolpeado.position.z = getRandomInt(-1,10);
+        objetoGolpeado.position.y = getRandomInt(0,5);
+      }
+    }
   }
 });

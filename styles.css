@@ -17,3 +17,11 @@
     right: 0;
     top: 0;
 }
+#crosshair{
+    position: absolute;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    left: 50vw;
+    top: 50vh;
+}
