@@ -18,7 +18,7 @@ renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
 
 //LUZ AMBIENTAL
-const ambientLight = new THREE.AmbientLight(0xffffff, 1.5); 
+const ambientLight = new THREE.AmbientLight(0xffffff, 2.0); 
 scene.add(ambientLight);
 
 const controls = new PointerLockControls( camera, document.body );
@@ -26,7 +26,7 @@ btnLock.onclick = () => controls.lock();
 
 //LOADING 3D MODELS
 const loader = new GLTFLoader();
-loader.load('assets/scene.gltf', function (gltf){
+loader.load('assets/map01.glb', function (gltf){
   gltf.scene.position.y = -2;
   gltf.scene.scale.set(0.05, 0.05, 0.05);
   scene.add(gltf.scene);
@@ -39,8 +39,8 @@ loader.load('assets/colt_m1911.glb', function (gltf){
   gltf.scene.scale.set(0.05, 0.05, 0.05);
   colt = gltf.scene;
   camera.add(colt); 
-  colt.position.set(0.3, -0.7, -1.4); 
-  colt.rotation.set(0, -1.5, -0.1);
+  colt.position.set(0.7, -0.7, -1.4); 
+  colt.rotation.set(0, -1.72, -0.15);
 }, undefined, function(error){
   console.error(error);
 });
@@ -89,6 +89,7 @@ let keys = {};
 const target = new THREE.Vector3();
 
 //MAIN LOOP
+let speed = 0.1;
 function animate( time ) {
   cubo1.rotation.x = time / 500;
   cubo1.rotation.y = time / 500;
@@ -102,19 +103,24 @@ function animate( time ) {
   );
   player1.lookAt(target);
 
+  if(keys['shift']){
+    speed = 0.2;
+  }else{
+    speed = 0.1;
+  }
   if (keys['w']) {
-    player1.position.addScaledVector(direction, 0.1);
+    player1.position.addScaledVector(direction, speed);
   }
   if (keys['s']) {
-    player1.position.addScaledVector(direction, -0.1);
+    player1.position.addScaledVector(direction, -speed);
   }
   const right = new THREE.Vector3();
   right.crossVectors(direction, new THREE.Vector3(0, 1, 0)); // Vector a la derecha
   if (keys['d']) {
-    player1.position.addScaledVector(right, 0.1);
+    player1.position.addScaledVector(right, speed);
   }
   if (keys['a']) {
-    player1.position.addScaledVector(right, -0.1);
+    player1.position.addScaledVector(right, -speed);
   }
 
   camera.position.x = player1.position.x;
@@ -125,9 +131,9 @@ function animate( time ) {
 renderer.setAnimationLoop( animate );
 
 document.body.onkeydown = (e)=>{
-  keys[e.key] = true;
+  keys[e.key.toLowerCase()] = true;
 }
 
 document.body.onkeyup = (e)=>{
-  keys[e.key] = false;
+  keys[e.key.toLowerCase()] = false;
 }
