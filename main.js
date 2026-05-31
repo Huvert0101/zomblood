@@ -35,9 +35,30 @@ loader.load('assets/map01.glb', function (gltf){
 });
 //COLT
 let colt;
+let mixer; // El reproductor de animaciones
+let actionFire; // La acción específica de disparar
+const clock = new THREE.Clock();
 loader.load('assets/colt_m1911.glb', function (gltf){
   gltf.scene.scale.set(0.05, 0.05, 0.05);
   colt = gltf.scene;
+  mixer = new THREE.AnimationMixer(colt);
+  const fireClip = THREE.AnimationClip.findByName(gltf.animations, "Fire");
+  if (fireClip) {
+    actionFire = mixer.clipAction(fireClip);
+    // CONFIGURACIÓN CRÍTICA PARA UN ARMA:
+    actionFire.setLoop(THREE.LoopOnce); // Que solo se reproduzca UNA vez por click
+    actionFire.clampWhenFinished = true; // Que se quede quieta al terminar, no que regrese bruscamente al inicio
+    actionFire.timeScale = 10;
+  }
+  const animaciones = gltf.animations;
+  if (animaciones && animaciones.length > 0) {
+    console.log(`¡Éxito! El modelo tiene ${animaciones.length} animaciones.`);
+    animaciones.forEach((clip, index) => {
+      console.log(`Animación [${index}]: Nombre = "${clip.name}", Duración = ${clip.duration}s`);
+    });
+  } else {
+    console.log("Este modelo es estático. No contiene animaciones.");
+  }
   camera.add(colt); 
   colt.position.set(0.7, -0.7, -1.4); 
   colt.rotation.set(0, -1.72, -0.15);
@@ -91,6 +112,12 @@ const target = new THREE.Vector3();
 //MAIN LOOP
 let speed = 0.1;
 function animate( time ) {
+
+  const delta = clock.getDelta(); 
+  if (mixer) {
+    mixer.update(delta);
+  }
+
   cubo1.rotation.x = time / 500;
   cubo1.rotation.y = time / 500;
   const direction = new THREE.Vector3();
@@ -137,3 +164,11 @@ document.body.onkeydown = (e)=>{
 document.body.onkeyup = (e)=>{
   keys[e.key.toLowerCase()] = false;
 }
+window.addEventListener('mousedown', () => {
+  // Solo disparamos si el juego está activo (pantalla bloqueada) y la animación cargó
+  if (controls.isLocked && actionFire) {
+    actionFire.stop(); 
+    actionFire.time = 3;
+    actionFire.play();
+  }
+});
