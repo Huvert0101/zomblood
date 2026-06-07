@@ -13,8 +13,17 @@ const textureLoader = new THREE.TextureLoader();
 const texture = textureLoader.load( 'wall.jpg' );
 texture.colorSpace = THREE.SRGBColorSpace;
 
+const cubeLoader = new THREE.CubeTextureLoader();
+const skyboxTexture = cubeLoader.load([
+  'assets/zpos.png', 'assets/zpos.png',
+  'assets/zpos.png', 'assets/zpos.png',
+  'assets/zpos.png', 'assets/zpos.png'
+]);
+
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+
+scene.background = skyboxTexture;
 
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth/4, window.innerHeight/4);
