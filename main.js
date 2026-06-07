@@ -2,6 +2,9 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 
+let pointsHUD = document.getElementById("pointsHUD");
+let points = parseInt(pointsHUD.innerText);
+
 const title = document.getElementById("title");
 title.innerText = "Zomblood";
 const btnLock = document.getElementById("btnLock");
@@ -21,8 +24,13 @@ renderer.domElement.style.imageRendering = "pixelated";
 document.body.appendChild( renderer.domElement );
 
 //LUZ AMBIENTAL
-const ambientLight = new THREE.AmbientLight(0xffffff, 2.0); 
+const ambientLight = new THREE.AmbientLight(0xffffff, 1.5); 
 scene.add(ambientLight);
+const light = new THREE.DirectionalLight( 0xffffff, 1);
+light.position.set( 0, 10, 0 );
+light.target.position.set( - 5, 0, 0 );
+scene.add( light );
+scene.add( light.target );
 
 const controls = new PointerLockControls( camera, document.body );
 btnLock.onclick = () => controls.lock();
@@ -35,7 +43,10 @@ const centroPantalla = new THREE.Vector2(0, 0);
 const loader = new GLTFLoader();
 loader.load('assets/map01.glb', function (gltf){
   gltf.scene.position.y = -2;
-  gltf.scene.scale.set(0.05, 0.05, 0.05);
+  gltf.scene.position.x = 25;
+  gltf.scene.position.z = 17;
+
+  gltf.scene.scale.set(1.5, 1.5, 1.5);
   scene.add(gltf.scene);
 }, undefined, function(error){
   console.error(error);
@@ -45,7 +56,7 @@ let colt;
 let mixer; // El reproductor de animaciones
 let actionFire; // La acción específica de disparar
 const clock = new THREE.Clock();
-loader.load('assets/colt_m1911.glb', function (gltf){
+loader.load('assets/fpsGunZomblood.glb', function (gltf){
   gltf.scene.scale.set(0.05, 0.05, 0.05);
   colt = gltf.scene;
   mixer = new THREE.AnimationMixer(colt);
@@ -67,8 +78,8 @@ loader.load('assets/colt_m1911.glb', function (gltf){
     console.log("Este modelo es estático. No contiene animaciones.");
   }
   camera.add(colt); 
-  colt.position.set(0.7, -0.7, -1.4); 
-  colt.rotation.set(0, -1.72, -0.15);
+  colt.position.set(0.7, -0.7, -1.9); 
+  colt.rotation.set(0, -1.52, -0.15);
 }, undefined, function(error){
   console.error(error);
 });
@@ -79,11 +90,11 @@ camera.position.y = 2;
 
 //ADDING LINES
 const lineMat = new THREE.LineBasicMaterial( { color: 0xffffff } );
-const points = [];
-points.push( new THREE.Vector3( -5, 0, 0 ) );
-points.push( new THREE.Vector3( 0, 5, 0 ) );
-points.push( new THREE.Vector3( 5, 0, 0 ) );
-const lineGeo = new THREE.BufferGeometry().setFromPoints( points );
+const vertexs = [];
+vertexs.push( new THREE.Vector3( -5, 0, 0 ) );
+vertexs.push( new THREE.Vector3( 0, 5, 0 ) );
+vertexs.push( new THREE.Vector3( 5, 0, 0 ) );
+const lineGeo = new THREE.BufferGeometry().setFromPoints( vertexs);
 const line = new THREE.Line( lineGeo, lineMat);
 scene.add(line);
 
@@ -177,7 +188,13 @@ document.body.onkeydown = (e)=>{
 document.body.onkeyup = (e)=>{
   keys[e.key.toLowerCase()] = false;
 }
-window.addEventListener('mousedown', () => {
+window.addEventListener('mousedown', (event) => {
+  if (event.button == 1) return; // Si no es clic izquierdo, salimos de la función
+  if(event.button == 2){
+    camera.fov = 40;
+    camera.updateProjectionMatrix();
+    return;
+  }
   // Solo disparamos si el juego está activo (pantalla bloqueada) y la animación cargó
   if (controls.isLocked && actionFire) {
     actionFire.stop(); 
@@ -192,10 +209,29 @@ window.addEventListener('mousedown', () => {
       console.log("¡Impacto confirmado!", objetoGolpeado);
 
       if (objetoGolpeado === cubo2) {
+        points += 10;
+        pointsHUD.innerText = points;
+        pointsHUD.style.fontSize = "45px";
+        setTimeout(()=>{
+          pointsHUD.style.fontSize = "40px";
+
+        }, 100);
         objetoGolpeado.position.x = getRandomInt(-1,10);
         objetoGolpeado.position.z = getRandomInt(-1,10);
         objetoGolpeado.position.y = getRandomInt(0,5);
       }
     }
   }
+});
+window.onmouseup = (event) =>{
+  if(event.button == 2){
+    camera.fov = 75;
+    camera.updateProjectionMatrix();
+  }
+}
+
+document.addEventListener('contextmenu', function(event) {
+  event.preventDefault();
+  console.log("¡Clic derecho detectado!");
+  // Aquí puedes ejecutar tu propia lógica
 });

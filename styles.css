@@ -25,3 +25,11 @@
     left: 50vw;
     top: 50vh;
 }
+#pointsHUD{
+    position: absolute;
+    right: 20px;
+    bottom: 40px;
+    color: yellow;
+    font-size: 40px;
+    transition: all ease 0.3s;
+}
